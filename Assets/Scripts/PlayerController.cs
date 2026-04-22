@@ -1,14 +1,19 @@
 using UnityEngine;
+using TMPro; //libreria para usar textos
 
 public class PlayerController : MonoBehaviour
 {
     public float speed = 5f; //variable para guardar la velocidad
     public int score = 0;
     public bool hasKey = false;
+    public bool hasWater = false;
+    public TextMeshProUGUI textScore;
+    public TextMeshProUGUI notificationText;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        UpdateTextScore();
     }
 
     // Update is called once per frame
@@ -18,39 +23,61 @@ public class PlayerController : MonoBehaviour
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
 
+        //creamos un vector para direccion del movimiento
         Vector3 direction = new Vector3(moveHorizontal, moveVertical, 0);
+
         transform.Translate(direction * speed * Time.deltaTime);
+
     }
 
-    //Este método especial de unity se ejecuta cuando interactuamos con un objeto en modo trigger
+    //función especial que se ejecuta cuando se toca a otro objeto que tiene un collider en modo
+    //trigger
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.CompareTag("Key"))
-         {
-            hasKey = true;
-            Destroy(other.gameObject);
-            Debug.Log("Tienes la llave!");
-         }
-
-        if(other.CompareTag("Collectable"))
+        if (other.CompareTag("Collectable"))
         {
-            score = score + 1; //Le sumo 1 a la variable score
+            score = score + 1;
+            UpdateTextScore();
+
             Destroy(other.gameObject);
-            Debug.Log("Collected!");
+            Debug.Log("Collected!!!");
+            ShowNotification("Collected!");
             Debug.Log("Score: " + score);
 
-            //Condición para ganar el juego
-            if(score >= 3 && hasKey == true)
-            {
-                Debug.Log("Ganaste!!");
-            }
-            else
-            {
-                Debug.Log("¡Sigue intentando! Necesitas 3 en total para ganar");
-            }
+
+        }
+        if (other.CompareTag("Key"))
+        {
+            hasKey = true;
+            Debug.Log("has recolectado la llave!");
+           ShowNotification("Has recogido la llave!");
+            Destroy(other.gameObject);
+        }
+        if (other.CompareTag("Water"))
+        {
+            hasWater = true;
+            Debug.Log("has tocado el agua y no puedes ganar!");
+            ShowNotification("has tocado el agua y no puedes ganar!");
+            Destroy(gameObject);
         }
 
-         
+        //condicion de victoria
+        if (score >= 3 && hasKey && !hasWater)
+        {
+            Debug.Log("Has ganado, Tienes suficientes puntos y la llave!");
+        }
+
+
+    }
+
+    void UpdateTextScore()
+    {
+        textScore.text = "Score: " + score;
+    }
+
+    void ShowNotification(string message)
+    {
+        notificationText.text = message;
     }
 
 }
